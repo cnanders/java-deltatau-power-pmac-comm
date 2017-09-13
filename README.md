@@ -1,6 +1,6 @@
 # Java SSH2 Communication With DeltaTau Power PMAC 
 
-Java wrapper to connect with Power PMAC, initialize the gpascii text interpreter, set parameters, and query parameter values.  
+Java wrapper to connect with Power PMAC, initialize the gpascii text interpreter, set parameter values, and get parameter values.  
 
 
 # Dependencies
@@ -17,8 +17,8 @@ Call this one time to initialize `com.jcraft.jsch.Session`, creates a shell `Cha
 
 ### gpasciiCommand()
 
-Use this to send a command to the Power PMAC (to set a parameter)
+Use this to send a “set” command to the Power PMAC, e.g., “DestCS2X=100.3”.  Set commands always contain “=”
 
 ### gpasciiQuery()
 
-Use this to get the value of parameter as a `String`
+Use this to send a “get” command to the Power PMAC, e.g., "DestCS2X", and receive the value as a `String`
