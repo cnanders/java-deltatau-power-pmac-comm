@@ -9,11 +9,11 @@ Java wrapper to connect with Power PMAC, initialize the gpascii text interpreter
 
 # Documentation
 
-See javadoc in [/doc/](doc)
+See javadoc in [doc/](doc)
 
 # Examples
 
-See [test/TestDeltaTauComm.java](test/TestDeltaTau.java)
+See [test/TestDeltaTauComm.java](test/TestDeltaTauComm.java)
 
 # Methods
 
