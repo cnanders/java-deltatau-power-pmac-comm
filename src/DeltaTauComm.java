@@ -19,17 +19,39 @@ public class DeltaTauComm {
 	private static final String DEFAULT_USERNAME = "root";
 	private static final String DEFAULT_PASSWORD = "deltatau";
 
-	// Constructor (default username and password)
+	/**
+	 * Constructor with user-provied hostname and default username and password
+	 * (defaults from the manufacturer)
+	 * @param hostname
+	 */
 	public DeltaTauComm(String hostname)
 	{
 		this(hostname, DeltaTauComm.DEFAULT_USERNAME, DeltaTauComm.DEFAULT_PASSWORD);
 	}
 	
+	/**
+	 * Constructor with user-provided hostname, username, and password.
+	 * Initializes `com.jcraft.jsch.Session`, creates a shell `Channel` within the
+	 * `Session`, writes the `gpascii -2` command to the `OutputBuffer` of the `Channel`
+	 * and then reads the `InputBuffer` of the `Channel` until it receives the 
+	 * "STDIN Open for ASCII input" response and then issues the "echo 15"
+	 * command to configure the text interpreter to provide "short" answers.
+	 * After completion, the Power PMAC is ready for ASCII commands.  
+	 * @param hostname
+	 * @param username
+	 * @param password
+	 * @see 	#gpasciiQuery(String)
+	 * @see #gpasciiCommand(String)
+	 */
 	public DeltaTauComm(String hostname, String username, String password)
 	{
 		this.hostname = hostname;
 		this.username = username;
 		this.password = password;
+		
+		this.gpasciiInit();
+		this.gpasciiShortAnswers();
+		
 	}
 	
 	private Session getSession(){
@@ -83,6 +105,7 @@ public class DeltaTauComm {
 	 * @return {String}
 	 */
 	
+	/*
 	private String sendAndReceive(String command)
 	{
 		
@@ -100,8 +123,15 @@ public class DeltaTauComm {
 	    }
 		return "";
 	}
+	*/
 	
-	public void gpasciiInit()
+	/**
+	 * Initializees `com.jcraft.jsch.Session`, creates a shell `Channel` within the
+	 * `Session`, writes the `gpascii -2` command to the `OutputBuffer` of the `Channel`
+	 * and then reads the `InputBuffer` of the `Channel` until it recieves the 
+	 * "STDIN Open for ASCII input" response.  
+	 */
+	private void gpasciiInit()
 	{
 		
 		List<String> commands = new ArrayList<String>();
@@ -117,7 +147,11 @@ public class DeltaTauComm {
 	    }
 	}
 	
-	public void gpasciiShortAnswers()
+	/**
+	 * Send the “echo 15” command and wait for expected response to 
+	 * configure the text interpreter to send short answers
+	 */
+	private void gpasciiShortAnswers()
 	{
 		
 		List<String> commands = new ArrayList<String>();
@@ -135,12 +169,14 @@ public class DeltaTauComm {
 		
 	
 	/**
-	 * Sends provided query command to the gpascii program. Waits until the InputStream of 
+	 * Sends provided query command to the gpascii program and returns the response. 
+	 * Waits until the InputStream of 
 	 * the channel (data received from attached server) receives the expected response.  
-	 * Parses the response to returns the answer String.  See readQueryAnswer for details about
-	 * how the gpascii program responds to queries.  
-	 * @param command
-	 * @return
+	 * Parses the response to returns the answer String.  
+	 * @param 	command	a query command, e.g., "DestCS2X"
+	 * @return 			the response formatted as a string
+	 * @see #readChannelToAcknowledgement(Channel)
+	 * @see #stringifyQueryResponse(byte[])
 	 */
 	public String gpasciiQuery(String command)
 	{
@@ -163,8 +199,9 @@ public class DeltaTauComm {
 	/**
 	 * Sends provided command to the gpascii program.  Waits until the InputStream of 
 	 * the channel (data received from attached server) receives the expected response.  
-	 * See readChannelToAcknowledgement for details about how the gpascii program responds to commands
-	 * @param command
+	 * @param 	command 	a query or "set" command, e.g. "DestCS1X=200.5".  query commands always
+	 * contain an equal sign.
+	 * @see #readChannelToAcknowledgement(Channel)
 	 */
 	
 	public void gpasciiCommand(String command)
@@ -180,22 +217,6 @@ public class DeltaTauComm {
 	
 	    }catch(Exception e){
 	        System.out.println("sendAndReceive() an error ocurred during sendAndReceive: "+e);
-	    }
-	}
-	
-	private void executeCommands(List<String> commands){
-	
-	    try{
-	        Channel channel=getChannel();
-	
-	        System.out.println("executeCommands() sending commands...");
-	        sendCommands(channel, commands);
-	
-	        readChannelToTerminator(channel);
-	        System.out.println("executeCommands() finished sending commands!");
-	
-	    }catch(Exception e){
-	        System.out.println("executeCommands() an error ocurred during executeCommands: "+e);
 	    }
 	}
 	
@@ -217,11 +238,14 @@ public class DeltaTauComm {
 	
 	}
 	
+	
 	/**
 	 * Returns a primitive byte[] with terminator bytes (13 and 10) removed from the end.  
 	 * @param original
 	 * @return byte[]
 	 */
+	
+	/*
 	private byte[] removeTerminatorBytesFromEnd(byte[] original)
 	{
 		
@@ -243,6 +267,7 @@ public class DeltaTauComm {
 		return original;		
 
 	}
+	*/
 	
 	/**
 	 * Returns true if the provided primitive byte[] contains a terminator byte (13 or 10) 
@@ -287,9 +312,9 @@ public class DeltaTauComm {
 		}
 		
 		byte[] bytesLastThree = Arrays.copyOfRange(bytes, bytes.length - 3, bytes.length);
-		byte[] bytesToCheck = {6, 13, 10};
+		byte[] bytesDesired = {6, 13, 10};
 		
-		if (Arrays.equals(bytesLastThree, bytesToCheck)) 
+		if (Arrays.equals(bytesLastThree, bytesDesired)) 
 		{
 			return true;
 		}
@@ -303,7 +328,11 @@ public class DeltaTauComm {
 	/**
 	 * Returns true if the final bytes of the provided byte[] are 
 	 * [65, 83, 67, 73, 73, 32, 73, 110, 112, 117, 116, 13, 10]
-	 * "ASCII Input\r\n"  in order
+	 * "ASCII Input\r\n" 
+	 * 
+	 * This method is used to check if the text interpreter has initialized on the PPMAC
+	 * after sending the “gpascii -2” start command
+	 * 
 	 * @param byte[] bytes
 	 * @return boolean
 	 */
@@ -348,7 +377,7 @@ public class DeltaTauComm {
 	    
 	    try{
 	        InputStream in = channel.getInputStream();
-	        String line = "";
+	        //String line = "";
 	        while (true){
 	        	
 	        		// in.avaialable() > 0 does not happen immediately; it takes time for 
@@ -435,17 +464,20 @@ public class DeltaTauComm {
 	
 	
 	/**
-	 * The response from the server for a command has the form:
+	 * This method reads the inputStream of the provided channel (data received from the attached server)
+	 * until the bytes [6 13 10] are received and returns a byte[] with all read 
+	 * bytes (including the [6 13 10] at the end).
+	 * 
+	 * The response from the gpascii server for a “set” command has the form:
 	 * [commandBytes] 13 10 [acknowledgementByte] 13 10
-	 * Where the acknowledgement byte === 6
+	 * where the acknowledgement byte === 6
 	 * 
-	 * The response from the server for a query has the form: 
+	 * The response from the gpascii server for a “get” query has the form: 
 	 * [queryBytes] 13 10 [answerBytes] 13 10 [acknowledgementByte] 13 10
-	 * where the acknowledgement byte === 6. This method returns [answerBytes] converted to a String.
+	 * where the acknowledgement byte === 6. 
 	 * 
-	 * This method reads the inputStream of the channel (data received from the attached server)
-	 * until the bytes [6 13 10] are received and returns the received byte[]  
 	 * @param channel
+	 * @return byte[]
 	 */
 	
 	private byte[] readChannelToAcknowledgement(Channel channel){
@@ -458,7 +490,7 @@ public class DeltaTauComm {
 	    
 	    try{
 	        InputStream in = channel.getInputStream();
-	        String line = "";
+	        //String line = "";
 	        while (true){
 	        	
 	        		// in.avaialable() > 0 does not happen immediately; it takes time for 
@@ -540,8 +572,10 @@ public class DeltaTauComm {
 	 * This method reads the inputStream of the channel (data received from the attached server)
 	 * until the byte equivalent of "ASCII Input\r\n" is received
 	 * ([65, 83, 67, 73, 73, 32, 73, 110, 112, 117, 116, 13, 10])
-	 * This method should be used after the initial gpascii -2 command is sent to start the text
-	 * interpreter on the PowerPmac.  Once this response is recieved, the ASCII interpreter
+	 * and returns a byte[] with all read  bytes (including the [65, 83, ...] at the end).
+	 * 
+	 * This method must be used after the initial “gpascii -2” command is sent to start the text
+	 * interpreter on the PowerPmac.  Once this response is received, the ASCII interpreter
 	 * is ready for commands 
 	 * @param channel
 	 */
@@ -556,7 +590,7 @@ public class DeltaTauComm {
 	    
 	    try{
 	        InputStream in = channel.getInputStream();
-	        String line = "";
+	        //String line = "";
 	        while (true){
 	        	
 	        		// in.avaialable() > 0 does not happen immediately; it takes time for 
@@ -666,6 +700,9 @@ public class DeltaTauComm {
         return new String(answer);
 	}
 	
+	/**
+	 * Closes the shell channel and the SSH session
+	 */
 	public void close(){
 	    channel.disconnect();
 	    session.disconnect();

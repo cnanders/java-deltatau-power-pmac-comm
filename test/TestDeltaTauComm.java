@@ -6,10 +6,7 @@ public final class TestDeltaTauComm {
 	    
 		DeltaTauComm deltaTauComm = new DeltaTauComm("192.168.20.23");
 		
-		deltaTauComm.gpasciiInit();
-		deltaTauComm.gpasciiShortAnswers();
-		
-	    	    
+	    
 	    //deltaTauComm.gpasciiCommand("NewWorkingMode=wm_RUN");
 	    System.out.println(deltaTauComm.gpasciiQuery("ActWorkingMode"));
 	    
