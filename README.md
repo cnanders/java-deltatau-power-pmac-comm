@@ -7,17 +7,15 @@ Java wrapper to connect with Power PMAC, initialize the gpascii text interpreter
 
 [Jsch](http://www.jcraft.com/jsch/)
 
-# Use
+# Documentation
 
-See test/TestDeltaTauComm.java
+See javadoc in [/doc/](doc)
 
-### gpasciiInit()
+# Examples
 
-Call this one time to initialize `com.jcraft.jsch.Session`, creates a shell `Channel` within the `Session`, writes the `gpascii -2` command to the `OutputBuffer` of the `Channel` and then reads the `InputBuffer` of the `Channel` until it recieves the "STDIN Open for ASCII input" response
+See [test/TestDeltaTauComm.java](test/TestDeltaTau.java)
 
-### gpasciiShortAnswers()
-
-Call this after gpasciiInit() to format “short” answers (that don’t contain the “DestCS2X=” prefix)
+# Methods
 
 ### gpasciiCommand()
 
