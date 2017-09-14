@@ -7,6 +7,8 @@ Java wrapper to connect with Power PMAC, initialize the gpascii text interpreter
 
 [Jsch](http://www.jcraft.com/jsch/)
 
+To bring this into you project (e.g., Eclipse), right-click the package in the package explorer -> build path -> add external libraires and include the .jar downloaded from [Jsch](http://www.jcraft.com/jsch/)
+
 # Documentation
 
 See javadoc in [doc/](doc)
