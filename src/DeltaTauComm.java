@@ -18,6 +18,7 @@ public class DeltaTauComm {
 	
 	private static final String DEFAULT_USERNAME = "root";
 	private static final String DEFAULT_PASSWORD = "deltatau";
+	private static final int DEFAULT_TIMEOUT = 1000;
 
 	/**
 	 * Constructor with user-provied hostname and default username and password
@@ -87,8 +88,13 @@ public class DeltaTauComm {
 	        session.setConfig("StrictHostKeyChecking", "no");
 	        session.setPassword(password);
 	
-	        System.out.println("connect() connecting SSH to " + hostname + " - Please wait for few seconds... ");
-	        session.connect();
+	        String msg = String.format(
+	        		"connect() connecting SSH to %s please wait up to %s ms (allowed timeout) ...",
+	        		hostname,
+	        		DeltaTauComm.DEFAULT_TIMEOUT
+	        );
+	        System.out.println(msg);
+	        session.connect(DeltaTauComm.DEFAULT_TIMEOUT);
 	        System.out.println("connect() connected!");
 	    }catch(Exception e){
 	        System.out.println("connect() an error occurred while connecting to "+hostname+": "+e);
