@@ -5,9 +5,13 @@ Java wrapper to connect with Power PMAC, initialize the gpascii text interpreter
 
 # Dependencies
 
-[Jsch](http://www.jcraft.com/jsch/)
+### [Apache Commons Lang](http://commons.apache.org/proper/commons-lang/)
 
-To bring this into you project (e.g., Eclipse), right-click the package in the package explorer -> build path -> add external libraires and include the .jar downloaded from [Jsch](http://www.jcraft.com/jsch/)
+To bring this into you project (e.g., Eclipse), right-click the package in the package explorer -> build path -> add external libraires and include the [.jar](http://commons.apache.org/proper/commons-lang/download_lang.cgi)
+
+### [Jsch](http://www.jcraft.com/jsch/)
+
+To bring this into you project (e.g., Eclipse), right-click the package in the package explorer -> build path -> add external libraires and include the [.jar](http://www.jcraft.com/jsch/)
 
 # Documentation
 

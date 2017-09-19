@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import org.apache.commons.lang3.SystemUtils;
 
 public class DeltaTauComm {
 
@@ -66,6 +66,7 @@ public class DeltaTauComm {
 	    if(channel == null || !channel.isConnected()){
 	        try{
 	            channel = (ChannelShell)getSession().openChannel("shell");
+	            channel.setPtyType("false");
 	            channel.connect();
 	
 	        }catch(Exception e){
@@ -154,7 +155,7 @@ public class DeltaTauComm {
 	}
 	
 	/**
-	 * Send the “echo 15” command and wait for expected response to 
+	 * Send the "echo 15" command and wait for expected response to 
 	 * configure the text interpreter to send short answers
 	 */
 	private void gpasciiShortAnswers()
@@ -167,6 +168,7 @@ public class DeltaTauComm {
 	        Channel channel=getChannel();
 	        sendCommands(channel, commands);
 	        readChannelToTerminator(channel);
+	        System.out.println("gpasciiShortAnswers() success.");
 	
 	    }catch(Exception e){
 	        System.out.println("gpasciiShortAnswers() an error ocurred during sendAndReceive: "+e);
@@ -337,7 +339,7 @@ public class DeltaTauComm {
 	 * "ASCII Input\r\n" 
 	 * 
 	 * This method is used to check if the text interpreter has initialized on the PPMAC
-	 * after sending the “gpascii -2” start command
+	 * after sending the "gpascii -2" start command
 	 * 
 	 * @param byte[] bytes
 	 * @return boolean
@@ -474,11 +476,11 @@ public class DeltaTauComm {
 	 * until the bytes [6 13 10] are received and returns a byte[] with all read 
 	 * bytes (including the [6 13 10] at the end).
 	 * 
-	 * The response from the gpascii server for a “set” command has the form:
+	 * The response from the gpascii server for a "set" command has the form:
 	 * [commandBytes] 13 10 [acknowledgementByte] 13 10
 	 * where the acknowledgement byte === 6
 	 * 
-	 * The response from the gpascii server for a “get” query has the form: 
+	 * The response from the gpascii server for a "get" query has the form: 
 	 * [queryBytes] 13 10 [answerBytes] 13 10 [acknowledgementByte] 13 10
 	 * where the acknowledgement byte === 6. 
 	 * 
@@ -580,7 +582,7 @@ public class DeltaTauComm {
 	 * ([65, 83, 67, 73, 73, 32, 73, 110, 112, 117, 116, 13, 10])
 	 * and returns a byte[] with all read  bytes (including the [65, 83, ...] at the end).
 	 * 
-	 * This method must be used after the initial “gpascii -2” command is sent to start the text
+	 * This method must be used after the initial "gpascii -2" command is sent to start the text
 	 * interpreter on the PowerPmac.  Once this response is received, the ASCII interpreter
 	 * is ready for commands 
 	 * @param channel
@@ -660,7 +662,7 @@ public class DeltaTauComm {
 	        }
 	        
 	        // buffer now contains terminator and acknowledgement byte at the end. We're done
-	        
+	        System.out.println("readChannelToAscii() found STDIN ready for ASCII Input");
 	        return bufferFilled;
 	        
 	    }
@@ -674,21 +676,45 @@ public class DeltaTauComm {
 	}
 	
 	/**
+	 * On UNIX operating systems where the shell is of type "sh" or "bash"
 	 * The response from the server for a query has the form: 
 	 * [queryBytes] 13 10 [answerBytes] 13 10 [acknowledgementByte] 13 10
-	 * where the acknowledgement byte === 6. This method returns [answerBytes] converted to a String.
+	 * where the acknowledgement byte === 6. 
 	 * 
-	 * This method removes the last five bytes ([13 10 6 13 10])
-	 * from the end of the received byte array. It then searches for the terminator byte 
+	 * On Windows operating system where the shell is the "cmd.exe" type
+	 * The response from the server for a query has the form: 
+	 * [queryBytes] 13 10 13 10 [answerBytes] 13 10 [acknowledgementByte] 13 10 [acknowledgementByte] 13 10
+	 * where the acknowledgement byte === 6. 
+	 * 
+	 * This method returns [answerBytes] converted to a String and works on both OSs
+	 * 
+	 * This method removes the last five/eight bytes [13 10 6 13 10] Unix / [13 10 6 13 10 6 13 10] Windows
+	 * from the end of the received byte arrayIt then searches for the terminator byte 
 	 * sequence following [queryBytes], in order to isolate [answerBytes], convert answerBytes[] to 
 	 * a String and return the string. 
 	 */
 	
 	private String stringifyQueryResponse(byte[] response)
 	{
-        // Remove [13 10 6 13 10] bytes from the end of buffer
-        response = Arrays.copyOfRange(response, 0, response.length - 5);
         
+		//String os = System.getProperty("os.name");
+		boolean isMacOS = SystemUtils.IS_OS_MAC;
+		boolean isWindowsOS = SystemUtils.IS_OS_WINDOWS;
+		
+		if (isMacOS)
+		{
+			// Remove [13, 10, 6, 13, 10] bytes from the end of buffer
+	        response = Arrays.copyOfRange(response, 0, response.length - 5);
+	        
+		}
+		if (isWindowsOS)
+		{
+			// Remove [13, 10, 6, 13, 10, 6, 13, 10] bytes from the end of buffer
+	        response = Arrays.copyOfRange(response, 0, response.length - 8);
+		}
+		
+		// Find the location of the first carriage return byte and
+		// Then remove [queryBytes] and [13 10] (Unix) / [13 10 13 10] (Windows)
         byte carriageReturn = 13;
 		
         int i = 0;
@@ -699,8 +725,20 @@ public class DeltaTauComm {
         		}
         }
         
-        // Remove [queryBytes] 13 10 from response
-        byte[] answer = Arrays.copyOfRange(response, i + 2, response.length);
+        // initialize answer
+        byte[] answer = new byte[0];
+        
+        if (isMacOS)
+        {
+        	// Remove [queryBytes] 13 10 from response
+        	answer = Arrays.copyOfRange(response, i + 2, response.length);
+        }
+        
+        if (isWindowsOS)
+        {
+        	// Remove [queryBytes] 13 10 13 10 from response
+        	answer = Arrays.copyOfRange(response, i + 4, response.length);
+        }
          
         // Convert to string and print
         return new String(answer);
