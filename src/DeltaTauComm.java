@@ -699,9 +699,10 @@ public class DeltaTauComm {
         
 		//String os = System.getProperty("os.name");
 		boolean isMacOS = SystemUtils.IS_OS_MAC;
+		boolean isUnixOS = SystemUtils.IS_OS_UNIX;
 		boolean isWindowsOS = SystemUtils.IS_OS_WINDOWS;
 		
-		if (isMacOS)
+		if (isMacOS || isUnixOS)
 		{
 			// Remove [13, 10, 6, 13, 10] bytes from the end of buffer
 	        response = Arrays.copyOfRange(response, 0, response.length - 5);
@@ -728,7 +729,7 @@ public class DeltaTauComm {
         // initialize answer
         byte[] answer = new byte[0];
         
-        if (isMacOS)
+        if (isMacOS || isUnixOS )
         {
         	// Remove [queryBytes] 13 10 from response
         	answer = Arrays.copyOfRange(response, i + 2, response.length);
