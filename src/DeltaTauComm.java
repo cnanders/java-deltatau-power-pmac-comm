@@ -20,6 +20,10 @@ public class DeltaTauComm {
 	private static final String DEFAULT_PASSWORD = "deltatau";
 	private static final int DEFAULT_TIMEOUT = 1000;
 
+	public static void main(String[] args){
+		// Don't do anything
+	}
+	
 	/**
 	 * Constructor with user-provied hostname and default username and password
 	 * (defaults from the manufacturer)
