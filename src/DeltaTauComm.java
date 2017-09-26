@@ -1,4 +1,3 @@
-
 import com.jcraft.jsch.*;
 
 import java.io.*;
@@ -22,6 +21,8 @@ public class DeltaTauComm {
 
 	public static void main(String[] args){
 		// Don't do anything
+		// This is here so "runnable jar" can be exported, which is required
+		// for the jar to include all dependencies
 	}
 	
 	/**
@@ -500,10 +501,12 @@ public class DeltaTauComm {
 	    int bytesRead = 0;
 	    int bytesReadSum = 0;
 	    
+	    long timeStartMs = System.currentTimeMillis();
+	    
 	    try{
 	        InputStream in = channel.getInputStream();
 	        //String line = "";
-	        while (true){
+	        while (	true ){
 	        	
 	        		// in.avaialable() > 0 does not happen immediately; it takes time for 
 	        		// the data packets to arrive.  
@@ -511,15 +514,25 @@ public class DeltaTauComm {
 	        		// Need to keep checking in.available() until we have read back a 
 	        		// terminator
 	        	
+	        	if ((System.currentTimeMillis() - timeStartMs) > DeltaTauComm.DEFAULT_TIMEOUT) {
+	        		
+	        		String msg = String.format(
+	    	        		"readChannelToTerminator breaking.  Tool longer than %s ms (allowed timeout) ...",
+	    	        		DeltaTauComm.DEFAULT_TIMEOUT
+	    	        );
+	        		System.out.println(msg);
+	        		return new byte[0];
+	        	}
+	        	
 	        		//System.out.println("readChannelToTerminator while loop");
 	            while (in.available() > 0) {
 	            	
-	            		// Second arg of in.read() is the start offset in array buffer
-	            		// at which the data is written
-	            	
-	            		// read() Returns the total number of bytes read into the buffer, 
-	            		// or -1 if there is no more data
-	            	
+            		// Second arg of in.read() is the start offset in array buffer
+            		// at which the data is written
+            	
+            		// read() Returns the total number of bytes read into the buffer, 
+            		// or -1 if there is no more data
+            	
 	                bytesRead = in.read(buffer, bytesReadSum, in.available());
 	                bytesReadSum += bytesRead;
 	                
@@ -527,10 +540,10 @@ public class DeltaTauComm {
 	                
 	                if (bytesRead < 0) {
 	                    // nothing else to read right now so can break out of this
-	                		// while loop (that reads most recently received data packet)
-	                		// This doesn't mean we have received a terminator character
-	                		// so can't break out of outer loop yet
-	                		break;
+                		// while loop (that reads most recently received data packet)
+                		// This doesn't mean we have received a terminator character
+                		// so can't break out of outer loop yet
+                		break;
 	                }	                
 	                
 	            }
@@ -547,12 +560,12 @@ public class DeltaTauComm {
 	            
 	            if (containsAcknowledgementAndTerminatorBytesAtEnd(bufferFilled))
 	            {
-            			//System.out.println("Breaking. Acknowledgement byte has been received!");
-            			
-            			// The acknowledgement byte has been received!
-            			// Can break out of the high-level while loop that is waiting
-            			// for the terminator byte
-	            		break; 
+        			//System.out.println("Breaking. Acknowledgement byte has been received!");
+        			
+        			// The acknowledgement byte has been received!
+        			// Can break out of the high-level while loop that is waiting
+        			// for the terminator byte
+            		break; 
 	            }
 	            
 	            try 
@@ -563,7 +576,7 @@ public class DeltaTauComm {
 	            {
 	            	
 	            } 
-	        }
+	        } // end of first while loop
 	        
 	        // buffer now contains terminator and acknowledgement byte at the end. We're done
 	        
@@ -701,6 +714,13 @@ public class DeltaTauComm {
 	private String stringifyQueryResponse(byte[] response)
 	{
         
+		byte[] byte0 = new byte[0];
+		if (Arrays.equals(response, byte0)) 
+		{
+			System.out.println("stringifyQueryResponse() returning empty string since input is byte[0]");
+			return "";
+		}
+		
 		//String os = System.getProperty("os.name");
 		boolean isMacOS = SystemUtils.IS_OS_MAC;
 		boolean isUnixOS = SystemUtils.IS_OS_UNIX;
