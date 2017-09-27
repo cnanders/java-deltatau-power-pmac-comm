@@ -717,8 +717,8 @@ public class DeltaTauComm {
 		byte[] byte0 = new byte[0];
 		if (Arrays.equals(response, byte0)) 
 		{
-			printMsg("stringifyQueryResponse() returning empty string since input is byte[0]");
-			return "";
+			printMsg("stringifyQueryResponse() returning string '0' since input is byte[0].  This happens when there is a timeout");
+			return "0";
 		}
 		
 		//String os = System.getProperty("os.name");
