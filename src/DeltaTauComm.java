@@ -18,6 +18,7 @@ public class DeltaTauComm {
 	private static final String DEFAULT_USERNAME = "root";
 	private static final String DEFAULT_PASSWORD = "deltatau";
 	private static final int DEFAULT_TIMEOUT = 500;
+	private static final int SIZE_OF_BYTE_ARRAY = 2048;
 
 	public static void main(String[] args){
 		// Don't do anything
@@ -382,8 +383,8 @@ public class DeltaTauComm {
 	
 	private byte[] readChannelToTerminator(Channel channel){
 	
-	    byte[] buffer = new byte[2048];
-	    byte[] bufferFilled = new byte[2048];
+	    byte[] buffer = new byte[DeltaTauComm.SIZE_OF_BYTE_ARRAY];
+	    byte[] bufferFilled = new byte[DeltaTauComm.SIZE_OF_BYTE_ARRAY];
 	    
 	    int bytesRead = 0;
 	    int bytesReadSum = 0;
@@ -498,8 +499,8 @@ public class DeltaTauComm {
 		// length of byte[] determines maximum size response that
 		// can be processed
 		
-	    byte[] buffer = new byte[2048];
-	    byte[] bufferFilled = new byte[2048];
+	    byte[] buffer = new byte[DeltaTauComm.SIZE_OF_BYTE_ARRAY];
+	    byte[] bufferFilled = new byte[DeltaTauComm.SIZE_OF_BYTE_ARRAY];
 	    
 	    int bytesRead = 0;
 	    int bytesReadSum = 0;
@@ -610,8 +611,8 @@ public class DeltaTauComm {
 	
 	private byte[] readChannelToAscii(Channel channel){
 		
-	    byte[] buffer = new byte[2048];
-	    byte[] bufferFilled = new byte[2048];
+	    byte[] buffer = new byte[DeltaTauComm.SIZE_OF_BYTE_ARRAY];
+	    byte[] bufferFilled = new byte[DeltaTauComm.SIZE_OF_BYTE_ARRAY];
 	    
 	    int bytesRead = 0;
 	    int bytesReadSum = 0;
