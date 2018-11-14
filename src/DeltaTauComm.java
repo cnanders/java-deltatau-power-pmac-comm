@@ -90,7 +90,7 @@ public class DeltaTauComm {
 	        session.setPassword(password);
 	
 	        String msg = String.format(
-	        		"connect() connecting SSH to %s please wait up to %s ms (allowed timeout) ...",
+	        		"DeltaTauComm.connect() connecting SSH to %s please wait up to %s ms (allowed timeout) ...",
 	        		hostname,
 	        		DeltaTauComm.DEFAULT_TIMEOUT
 	        );
