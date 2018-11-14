@@ -1,4 +1,3 @@
-
 import com.jcraft.jsch.*;
 
 import java.io.*;
@@ -18,8 +17,14 @@ public class DeltaTauComm {
 	
 	private static final String DEFAULT_USERNAME = "root";
 	private static final String DEFAULT_PASSWORD = "deltatau";
-	private static final int DEFAULT_TIMEOUT = 1000;
+	private static final int DEFAULT_TIMEOUT = 500;
 
+	public static void main(String[] args){
+		// Don't do anything
+		// This is here so "runnable jar" can be exported, which is required
+		// for the jar to include all dependencies
+	}
+	
 	/**
 	 * Constructor with user-provied hostname and default username and password
 	 * (defaults from the manufacturer)
@@ -70,7 +75,7 @@ public class DeltaTauComm {
 	            channel.connect();
 	
 	        }catch(Exception e){
-	            System.out.println("DeltaTauComm.getChannel() error while opening channel: "+ e);
+	            printMsg("getChannel() error while opening channel: "+ e);
 	        }
 	    }
 	    return channel;
@@ -94,11 +99,11 @@ public class DeltaTauComm {
 	        		hostname,
 	        		DeltaTauComm.DEFAULT_TIMEOUT
 	        );
-	        System.out.println(msg);
+	        printMsg(msg);
 	        session.connect(DeltaTauComm.DEFAULT_TIMEOUT);
-	        System.out.println("DeltaTauComm.connect() connected!");
+	        printMsg("connect() connected!");
 	    }catch(Exception e){
-	        System.out.println("DeltaTauComm.connect() an error occurred while connecting to "+hostname+": "+e);
+	        printMsg("connect() an error occurred while connecting to "+hostname+": "+e);
 	    }
 	
 	    return session;
@@ -126,7 +131,7 @@ public class DeltaTauComm {
 	        return new String(response);
 	
 	    }catch(Exception e){
-	        System.out.println("DeltaTauComm.sendAndReceive() an error ocurred during sendAndReceive: "+e);
+	        printMsg("sendAndReceive() an error ocurred during sendAndReceive: "+e);
 	    }
 		return "";
 	}
@@ -150,7 +155,7 @@ public class DeltaTauComm {
 	        readChannelToAscii(channel);
 	
 	    }catch(Exception e){
-	        System.out.println("DeltaTauComm.sendAndReceive() an error ocurred during sendAndReceive: "+e);
+	        printMsg("sendAndReceive() an error ocurred during sendAndReceive: "+e);
 	    }
 	}
 	
@@ -168,10 +173,10 @@ public class DeltaTauComm {
 	        Channel channel=getChannel();
 	        sendCommands(channel, commands);
 	        readChannelToTerminator(channel);
-	        System.out.println("DeltaTauComm.gpasciiShortAnswers() success.");
+	        printMsg("gpasciiShortAnswers() success.");
 	
 	    }catch(Exception e){
-	        System.out.println("DeltaTauComm.gpasciiShortAnswers() an error ocurred during sendAndReceive: "+e);
+	        printMsg("gpasciiShortAnswers() an error ocurred during sendAndReceive: "+e);
 	    }
 	}
 		
@@ -199,7 +204,7 @@ public class DeltaTauComm {
 	        return stringifyQueryResponse(response);
 	
 	    }catch(Exception e){
-	        System.out.println("DeltaTauComm.sendAndReceive() an error ocurred during sendAndReceive: "+e);
+	        printMsg("sendAndReceive() an error ocurred during sendAndReceive: "+e);
 	    }
 		return "";
 	}
@@ -224,7 +229,7 @@ public class DeltaTauComm {
 	        readChannelToAcknowledgement(channel);
 	
 	    }catch(Exception e){
-	        System.out.println("DeltaTauComm.sendAndReceive() an error ocurred during sendAndReceive: "+e);
+	        printMsg("sendAndReceive() an error ocurred during sendAndReceive: "+e);
 	    }
 	}
 	
@@ -241,7 +246,7 @@ public class DeltaTauComm {
 	
 	        out.flush();
 	    }catch(Exception e){
-	        System.out.println("sendCommands() error while sending commands: "+ e);
+	        printMsg("sendCommands() error while sending commands: "+ e);
 	    }
 	
 	}
@@ -268,7 +273,7 @@ public class DeltaTauComm {
 			original[original.length - 1] == lineFeed
 		)
 		{
-			//System.out.println("DeltaTauComm.removeTerminatorBytesFromEnd removing byte");
+			//printMsg("removeTerminatorBytesFromEnd removing byte");
 			original = Arrays.copyOfRange(original, 0, original.length - 1);
 		}
 		
@@ -394,7 +399,7 @@ public class DeltaTauComm {
 	        		// Need to keep checking in.available() until we have read back a 
 	        		// terminator
 	        	
-	        		//System.out.println("DeltaTauComm.readChannelToTerminator while loop");
+	        		//printMsg("readChannelToTerminator while loop");
 	            while (in.available() > 0) {
 	            	
 	            		// Second arg of in.read() is the start offset in array buffer
@@ -406,7 +411,7 @@ public class DeltaTauComm {
 	                bytesRead = in.read(buffer, bytesReadSum, in.available());
 	                bytesReadSum += bytesRead;
 	                
-	                //System.out.println("DeltaTauComm.readChannelToTerminator() read packet from inputStream");
+	                //printMsg("readChannelToTerminator() read packet from inputStream");
 	                
 	                if (bytesRead < 0) {
 	                    // nothing else to read right now so can break out of this
@@ -430,8 +435,8 @@ public class DeltaTauComm {
 	            
 	            if (containsTerminatorByteAtEnd(bufferFilled))
 	            {
-            			//System.out.println("DeltaTauComm.readChannelToTerminator() Breaking. Terminator byte has been received!");
-            			//System.out.println(new String(bufferFilled));
+            			//printMsg("readChannelToTerminator() Breaking. Terminator byte has been received!");
+            			//printMsg(new String(bufferFilled));
             			// The terminator byte has been received!
             			// Can break out of the high-level while loop that is waiting
             			// for the terminator byte
@@ -456,13 +461,13 @@ public class DeltaTauComm {
             // Convert to string and print
             //line = new String(bufferWithoutTerminators);
             
-            //System.out.println(line);
+            //printMsg(line);
             
             return bufferFilled;
 	    }
 	    catch(Exception e)
 	    {
-	        System.out.println("DeltaTauComm.readChannelToTerminator() Error while reading channel output: "+ e);
+	        printMsg("readChannelToTerminator() Error while reading channel output: "+ e);
 	    }
 	    
 	    return new byte[0];
@@ -499,10 +504,12 @@ public class DeltaTauComm {
 	    int bytesRead = 0;
 	    int bytesReadSum = 0;
 	    
+	    long timeStartMs = System.currentTimeMillis();
+	    
 	    try{
 	        InputStream in = channel.getInputStream();
 	        //String line = "";
-	        while (true){
+	        while (	true ){
 	        	
 	        		// in.avaialable() > 0 does not happen immediately; it takes time for 
 	        		// the data packets to arrive.  
@@ -510,26 +517,36 @@ public class DeltaTauComm {
 	        		// Need to keep checking in.available() until we have read back a 
 	        		// terminator
 	        	
-	        		//System.out.println("DeltaTauComm.readChannelToTerminator while loop");
+	        	if ((System.currentTimeMillis() - timeStartMs) > DeltaTauComm.DEFAULT_TIMEOUT) {
+	        		
+	        		String msg = String.format(
+	    	        		"readChannelToTerminator breaking.  Tool longer than %s ms (allowed timeout) ...",
+	    	        		DeltaTauComm.DEFAULT_TIMEOUT
+	    	        );
+	        		printMsg(msg);
+	        		return new byte[0];
+	        	}
+	        	
+	        		//printMsg("readChannelToTerminator while loop");
 	            while (in.available() > 0) {
 	            	
-	            		// Second arg of in.read() is the start offset in array buffer
-	            		// at which the data is written
-	            	
-	            		// read() Returns the total number of bytes read into the buffer, 
-	            		// or -1 if there is no more data
-	            	
+            		// Second arg of in.read() is the start offset in array buffer
+            		// at which the data is written
+            	
+            		// read() Returns the total number of bytes read into the buffer, 
+            		// or -1 if there is no more data
+            	
 	                bytesRead = in.read(buffer, bytesReadSum, in.available());
 	                bytesReadSum += bytesRead;
 	                
-	                //System.out.println("DeltaTauComm.readChannelToTerminator() read packet from inputStream");
+	                //printMsg("readChannelToTerminator() read packet from inputStream");
 	                
 	                if (bytesRead < 0) {
 	                    // nothing else to read right now so can break out of this
-	                		// while loop (that reads most recently received data packet)
-	                		// This doesn't mean we have received a terminator character
-	                		// so can't break out of outer loop yet
-	                		break;
+                		// while loop (that reads most recently received data packet)
+                		// This doesn't mean we have received a terminator character
+                		// so can't break out of outer loop yet
+                		break;
 	                }	                
 	                
 	            }
@@ -546,12 +563,12 @@ public class DeltaTauComm {
 	            
 	            if (containsAcknowledgementAndTerminatorBytesAtEnd(bufferFilled))
 	            {
-            			//System.out.println("DeltaTauComm.Breaking. Acknowledgement byte has been received!");
-            			
-            			// The acknowledgement byte has been received!
-            			// Can break out of the high-level while loop that is waiting
-            			// for the terminator byte
-	            		break; 
+        			//printMsg("Breaking. Acknowledgement byte has been received!");
+        			
+        			// The acknowledgement byte has been received!
+        			// Can break out of the high-level while loop that is waiting
+        			// for the terminator byte
+            		break; 
 	            }
 	            
 	            try 
@@ -562,7 +579,7 @@ public class DeltaTauComm {
 	            {
 	            	
 	            } 
-	        }
+	        } // end of first while loop
 	        
 	        // buffer now contains terminator and acknowledgement byte at the end. We're done
 	        
@@ -571,7 +588,7 @@ public class DeltaTauComm {
 	    }
 	    catch(Exception e)
 	    {
-	        System.out.println("DeltaTauComm.readChannelToTerminator() Error while reading channel output: "+ e);
+	        printMsg("readChannelToTerminator() Error while reading channel output: "+ e);
 	    }
 	    
 	    return new byte[0];
@@ -610,7 +627,7 @@ public class DeltaTauComm {
 	        		// Need to keep checking in.available() until we have read back a 
 	        		// terminator
 	        	
-	        		//System.out.println("DeltaTauComm.readChannelToTerminator while loop");
+	        		//printMsg("readChannelToTerminator while loop");
 	            while (in.available() > 0) {
 	            	
 	            		// Second arg of in.read() is the start offset in array buffer
@@ -622,7 +639,7 @@ public class DeltaTauComm {
 	                bytesRead = in.read(buffer, bytesReadSum, in.available());
 	                bytesReadSum += bytesRead;
 	                
-	                //System.out.println("DeltaTauComm.readChannelToTerminator() read packet from inputStream");
+	                //printMsg("readChannelToTerminator() read packet from inputStream");
 	                
 	                if (bytesRead < 0) {
 	                    // nothing else to read right now so can break out of this
@@ -646,7 +663,7 @@ public class DeltaTauComm {
 	            
 	            if (containsAsciiInputAndTerminatorBytesAtEnd(bufferFilled))
 	            {
-            			//System.out.println("DeltaTauComm.readChannelToAscii() breaking.");
+            			//printMsg("readChannelToAscii() breaking.");
             			
             			// The acknowledgement byte has been received!
             			// Can break out of the high-level while loop that is waiting
@@ -665,13 +682,13 @@ public class DeltaTauComm {
 	        }
 	        
 	        // buffer now contains terminator and acknowledgement byte at the end. We're done
-	        System.out.println("DeltaTauComom.readChannelToAscii() found STDIN ready for ASCII Input");
+	        printMsg("readChannelToAscii() found STDIN ready for ASCII Input");
 	        return bufferFilled;
 	        
 	    }
 	    catch(Exception e)
 	    {
-	        System.out.println("DeltaTauComm.readChannelToTerminator() Error while reading channel output: "+ e);
+	        printMsg("readChannelToTerminator() Error while reading channel output: "+ e);
 	    }
 	    
 	    return new byte[0];
@@ -700,6 +717,13 @@ public class DeltaTauComm {
 	private String stringifyQueryResponse(byte[] response)
 	{
         
+		byte[] byte0 = new byte[0];
+		if (Arrays.equals(response, byte0)) 
+		{
+			printMsg("stringifyQueryResponse() returning string '0' since input is byte[0].  This happens when there is a timeout");
+			return "0";
+		}
+		
 		//String os = System.getProperty("os.name");
 		boolean isMacOS = SystemUtils.IS_OS_MAC;
 		boolean isUnixOS = SystemUtils.IS_OS_UNIX;
@@ -754,6 +778,16 @@ public class DeltaTauComm {
 	public void close(){
 	    channel.disconnect();
 	    session.disconnect();
-	    System.out.println("DeltaTauComm.close() Disconnected channel and session");
+	    printMsg("close() Disconnected channel and session");
 	}	
+	
+	private void printMsg(String msg) 
+	{
+		String msgFull = String.format(
+    		"(Java) DeltaTauComm %s",
+    		msg
+        );
+		
+		System.out.println(msgFull);
+	}
 }
